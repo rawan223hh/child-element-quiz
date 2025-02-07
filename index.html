@@ -1,134 +1,94 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Child Element Quiz</title>
-    <style>
-        body { font-family: Arial, sans-serif; margin: 20px; direction: rtl; text-align: right; }
-        .container { max-width: 600px; margin: auto; }
-        h2 { text-align: center; }
-        .question { margin-bottom: 15px; }
-        .result { display: none; padding: 15px; background: #f4f4f4; margin-top: 20px; }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <h2>استبيان عناصر الطفل / Child Element Questionnaire</h2>
-        <form id="quiz-form">
-            <div id="questions"></div>
-            <button type="submit">إرسال / Submit</button>
-        </form>
-        <div id="result" class="result"></div>
-    </div>
+from flask import Flask, render_template, request
 
-    <script>
-        const elements = {
-            Wood: {
-                traits: "نشط، فضولي، قوي الإرادة، سريع التصرف، يحب الفوز، يتعلم بالممارسة، يحب المخاطر. / Energetic, curious, strong-willed, quick to act, loves to win, learns by doing, loves danger.",
-                approach: "استخدام الماء لتغذية القلب. زيادة شرب الماء والسوائل، إعطاء زيوت السمك، الأولوية للاستحمام، السباحة، والنوم. / Use Water to nourish. Increase drinking water & fluids, give fish oils, prioritize bathing, swimming, and sleep.",
-                training: "استخدام تمارين التنفس، لعبة الوقت، لعبة الواجبات، تحديد جدول يومي، اليوغا، المشي، فنون القتال، أو العلاج الطبيعي. / Breathing, The Time Game, The Homework Game, mapping the day, yoga, hiking, martial arts, or physical therapy.",
-                expanding: "تشجيع الأداء والقيادة، تجربة علاج النطق، الرقص، الجمباز، ألعاب الإبداع مثل Angry 1-2-3. / Encourage performance and leadership, consider speech therapy, dance, gymnastics, & Angry 1-2-3 game.",
-                mastering: "ممارسة الأكل الجماعي، مساعدة في الطهي، الغناء معًا، تناول البروتينات في الإفطار. / Practice eating together, help in cooking meals, and chanting/singing together, proteins for breakfast.",
-                teacherStrategies: "السماح بفواصل حركة قصيرة، إعطاء أدوار قيادية، توفير أنشطة تفاعلية، وضع قواعد واضحة، تعزيز التعاون. / Allow short movement breaks, provide leadership roles, hands-on tasks, set clear rules, and encourage collaboration.",
-                qigong: "تمرين الوقوف كالشجرة: الوقوف بعرض الكتفين، تخيل كونك شجرة قوية، التركيز على التنفس. / Standing Like a Tree: Stand shoulder-width apart, imagine being a sturdy tree, focus on breath.",
-                careers: "رائد أعمال، مستجيب للطوارئ، طبيب، فنان، محامٍ، معلم / Entrepreneur, Emergency Responder, Medical Careers, Artist, Lawyer, Teacher.",
-                questions: [
-                    "هل يستمتع طفلك بتجربة أشياء جديدة ويحب التحديات / Does your child enjoy trying new things and taking on challenges",
-                    "هل يتعلم طفلك من خلال النشاط البدني / Does your child learn physically",
-                    "هل يتحرك طفلك كثيرًا أو يهتز / Does your child twitch and squirm",
-                    "هل يكره طفلك أن يُطلب منه ما يجب فعله أو الشعور بالقيود / Does your child dislike being told what to do or feeling restricted",
-                    "هل يحب طفلك إثارة المخاطر / Does your child love the thrill of danger",
-                    "هل يعاني طفلك من التبول اللاإرادي المتكرر / Does your child have recurrent bed wetting",
-                    "هل يظهر طفلك ثقة زائدة بالنفس أو لا يريد المساعدة من الآخرين / Does your child often show overconfidence or not want help from others",
-                    "هل لدى طفلك نوبات غضب متفجرة عند الانزعاج / Does your child have explosive anger when upset",
-                    "هل يشتهي طفلك المنشطات مثل السكر أو الصودا أو الزبدة / Does your child crave stimulants like sugar, soda, or butter"
-                ]
-            },
-            Fire: {
-                traits: "حماسي، اجتماعي، مفعم بالطاقة، مرح، مضحك، متفائل. / Excitable, social, full of energy, playful, funny, optimistic.",
-                approach: "استخدام استراتيجيات الخشب، مثل تحديد الجدول اليومي، وتوفير وقود ثابت مع وجبة إفطار غنية بالبروتين. / Use Wood strategies, including mapping out the day, and providing steady fuel with a protein breakfast.",
-                training: "التركيز على تحسين النوم، واستخدام الألعاب لتحسين الذاكرة، وتناول زيوت السمك، وشرب الماء الكافي. / Focus on better sleep, using games to sharpen memory, using fish oils, and drinking enough water.",
-                expanding: "توفير منفذ من خلال الطهي، التحكم في نسبة السكر في الدم، الغناء، الإرشاد، التدريبات على التشابهات، وبطاقات التذكير. / Provide an outlet through cooking, blood sugar control, singing, mentoring, practicing analogies, and flash cards.",
-                mastering: "استخدام التأمل، العلاج العطري، وتمارين التنفس لتنظيم العواطف. / Use meditation, aromatherapy, and breathing exercises to regulate emotions.",
-                teacherStrategies: "استخدام التشجيع الإيجابي، وإدخال ألوان زاهية لجذب الانتباه. / Use positivity, encourage with kind words, and incorporate colorful visuals.",
-                qigong: "تمرين الوقوف كالشمس: الوقوف بعرض الكتفين، تخيل كونك الشمس، والتركيز على التنفس. / Standing Like the Sun: Stand shoulder-width apart, imagine being the sun, and focus on breath.",
-                careers: "معلم، صحفي، طاهٍ، عامل حضانة. / Teacher, Journalist, Chef, Daycare Worker.",
-                questions: [
-                    "هل يحب طفلك التواجد حول الآخرين ويستمتع بالاهتمام / Does your child love being around other people and enjoy attention",
-                    "هل تتغير مزاجات طفلك بسرعة / Does your child often change moods quickly",
-                    "هل يعاني طفلك من صعوبة في النوم / Does your child have difficulty falling asleep"
-                    ]
-               },
-               Earth: {
-                traits: "حنون، مفكر، مخلص، أحيانًا قلق. / Caring, kind, thoughtful, loyal, sometimes worried and anxious.",
-                approach: "استخدام استراتيجيات النار، مثل المرح، التدليك الحسي، والمشي حافي القدمين على العشب. / Use Fire strategies, including humor, sensory integration, and walking barefoot on grass.",
-                training: "استخدام سرد القصص، زيادة الحركة، وتحسين النظام الغذائي بالبروتين. / Use storytelling, increase movement, and improve diet with protein.",
-                expanding: "استخدام الفنون والموسيقى وألعاب الأنماط والتأمل. / Use arts, music, pattern games, and breathing exercises.",
-                mastering: "ممارسة تمارين تشي كونغ، وزراعة النباتات معًا لتعزيز الشعور بالمسؤولية. / Practice Qigong, plant flowers or vegetables together to encourage responsibility.",
-                teacherStrategies: "استخدام الأنشطة الجماعية لتعزيز الشعور بالانتماء. / Use group activities to foster inclusion and teamwork.",
-                qigong: "تمرين الوقوف بين السماء والأرض: الوقوف باستقامة، رفع يد للأعلى والأخرى للأسفل مع الشهيق والزفير. / Standing Between Sky and Ground: Stand straight, raise one hand upward and the other downward with inhale and exhale.",
-                careers: "أخصائي اجتماعي، معلم، فنان، طبيب. / Social Worker, Teacher, Artist, Healthcare Professional.",
-                questions: [
-                    "هل يهتم طفلك دائمًا بالآخرين / Is your child caring and always thinking about others",
-                    "هل طفلك يأكل بكثرة / Does your child overeat",
-                    "هل يفضل طفلك التواجد مع الآخرين بدلاً من البقاء بمفرده / Does your child prefer being with other people rather than alone"
-                ]
-            },
-            Metal: {
-                traits: "منظم، دقيق، يركز على التفاصيل. / Organized, careful, detail-focused.",
-                approach: "استخدام استراتيجيات الأرض مثل التدليك والطهي والزراعة. / Use Earth strategies like massage, cooking, and gardening.",
-                training: "تشجيع اللعب التمثيلي والفنون والحرف اليدوية لبناء مهارات التفكير النقدي. / Encourage play-acting, arts, and crafts to develop critical thinking.",
-                expanding: "تشجيع شرب المزيد من الماء، النوم المنتظم، وتمارين التنفس. / Encourage drinking more water, regular sleep, and breathing exercises.",
-                mastering: "استخدام ألعاب الألغاز والتمارين الذهنية لتحفيز الدماغ. / Use puzzles and brain exercises to stimulate the mind.",
-                teacherStrategies: "إنشاء جداول يومية وهيكلة الفصل الدراسي لمساعدتهم على التنظيم. / Create daily schedules and structure the classroom to support organization.",
-                qigong: "تمرين الوقوف كالجبل: الوقوف بثبات، الاستنشاق أثناء التمدد بلطف، ثم الاسترخاء. / Standing Like a Mountain: Stand firm, inhale while gently stretching, then relax.",
-                careers: "مهندس، محاسب، معمار، عالم. / Engineer, Accountant, Architect, Scientist.",
-                questions: [
-                    "هل يحب طفلك الروتين ويكره المفاجآت / Does your child like having a routine and dislike surprises or changes",
-                    "هل يشتهي طفلك أطعمة غير عادية / Does your child crave unusual food",
-                    "هل ينزعج طفلك عند ارتكاب الأخطاء / Does your child get upset when they make mistakes or when things go wrong"
-                ]
-            },
-            Water: {
-                traits: "خيالي، هادئ، يحب الأحلام، يأخذ وقته. / Imaginative, quiet, loves to dream, takes time.",
-                approach: "استخدام استراتيجيات المعدن لتحسين البنية والاستقرار مثل الألعاب الذهنية والموسيقى. / Use Metal strategies for structure and stability like brain games and music.",
-                training: "تشجيع الفنون، القراءة، والأنشطة الهادئة للمساعدة في التعبير عن النفس. / Encourage arts, reading, and quiet activities to help self-expression.",
-                expanding: "تعزيز الحركة مثل المشي لمسافات طويلة، فنون القتال، واليوغا. / Increase movement like hiking, martial arts, and yoga.",
-                mastering: "استخدام التأمل، تمارين تشي كونغ، وسرد القصص لتطوير الإبداع. / Use meditation, Qigong exercises, and storytelling to enhance creativity.",
-                teacherStrategies: "السماح بأوقات هادئة أثناء اليوم لمساعدتهم على التركيز وإعادة الشحن. / Allow quiet time during the day to help them focus and recharge.",
-                qigong: "تمرين الوقوف مثل البحر: الوقوف بثبات، الاستنشاق أثناء رفع الذراعين، ثم الزفير أثناء الانحناء للأمام. / Standing Like the Sea: Stand firmly, inhale while raising arms, then exhale while bending forward.",
-                careers: "كاتب، فنان، موسيقي، طبيب نفسي. / Writer, Artist, Musician, Psychologist.",
-                questions: [
-                    "هل لدى طفلك خيال واسع ويحب أحلام اليقظة / Does your child have a big imagination and enjoy daydreaming",
-                    "هل يشعر طفلك بالراحة عند البقاء بمفرده / Does your child feel comfortable being alone",
-                    "هل يواجه طفلك صعوبة في إنهاء المهام / Does your child have trouble finishing tasks or feel like giving up"
-                ]
-            }
-        };
- function populateQuestions() {
-            const questionsDiv = document.getElementById('questions');
-            Object.keys(elements).forEach(element => {
-                const header = document.createElement('h3');
-                header.textContent = `${element} - ${elements[element].traits}`;
-                questionsDiv.appendChild(header);
-                elements[element].questions.forEach(question => {
-                    const div = document.createElement('div');
-                    div.className = 'question';
-                    div.innerHTML = `<label>${question}</label>
-                        <select name="${element}" required>
-                            <option value="1">Rarely</option>
-                            <option value="2">Sometimes</option>
-                            <option value="3">Very Often</option>
-                        </select>`;
-                    questionsDiv.appendChild(div);
-                });
-            });
-        }
+app = Flask(__name__)
 
-        document.addEventListener('DOMContentLoaded', populateQuestions);
-    </script>
-</body>
-</html>
+# Define the questions and their respective elements
+element_questions = {
+    "Wood": [
+        "Does your child enjoy trying new things and taking on challenges?",
+        "Does your child learn physically?",
+        "Does your child twitch and squirm?",
+        "Does your child dislike being told what to do or feeling restricted?",
+        "Does your child love the thrill of danger?",
+        "Does your child have recurrent bed wetting?",
+        "Does your child often show overconfidence or not want help from others?",
+        "Does your child have explosive anger when upset?",
+        "Does your child crave stimulants like sugar, soda, or butter?"
+    ],
+    "Fire": [
+        "Does your child love being around other people and enjoy attention?",
+        "Does your child often change moods quickly?",
+        "Does your child have difficulty falling asleep?",
+        "Does your child get distracted easily by changes around them?",
+        "Is your child easily panicked or upset by small issues?",
+        "Does your child complain of being bored often?",
+        "Does your child tend to act impulsively or unpredictably?",
+        "Does your child get flushed or sweat a lot?",
+        "Does your child experience diarrhea or stomach discomfort often?",
+        "Does your child crave sweets, spicy food, or ice?"
+    ],
+    "Earth": [
+        "Is your child caring and always thinking about others?",
+        "Does your child overeat?",
+        "Does your child prefer being with other people, rather than alone?",
+        "Does your child have trouble setting boundaries or respecting personal space?",
+        "Does your child feel anxious when away from loved ones or when not feeling accepted?",
+        "Is your child sometimes whiny, needy, or clingy?",
+        "Is your child disorganized?",
+        "Does your child often socialize excessively?",
+        "Does your child crave sweets and carbohydrates like sugar or bread?",
+        "Does your child have stomach aches or indigestion?"
+    ],
+    "Metal": [
+        "Does your child like having a routine and dislike surprises or changes?",
+        "Does your child crave unusual food?",
+        "Does your child get upset when they make mistakes or when things go wrong?",
+        "Does your child like things to be orderly and tidy?",
+        "Does your child tend to blame others when something goes wrong?",
+        "Does your child get extremely cold easily?",
+        "Is your child very sensitive to smells, tastes, or textures?",
+        "Does your child experience dry skin or hair?",
+        "Does your child have stiff joints?",
+        "Does your child experience constipation?"
+    ],
+    "Water": [
+        "Does your child have a big imagination and enjoy daydreaming?",
+        "Does your child feel comfortable being alone?",
+        "Does your child have trouble finishing tasks or feel like giving up?",
+        "Does your child take their time doing things?",
+        "Does your child have negative thoughts or get stuck in a negative mood?",
+        "Does your child struggle with being motivated to do things?",
+        "Does your child have difficulty expressing their ideas or emotions?",
+        "Does your child have a strong memory?",
+        "Does your child experience backaches or low physical stamina?",
+        "Does your child crave salty, meats, or hot foods?"
+    ]
+}
 
+element_advice = {
+    "Wood": "Increase drinking water & fluids, give fish oils, prioritize bathing and sleep. Encourage hands-on activities like building or crafting. Allow short movement breaks and let them take leadership roles.",
+    "Fire": "Encourage positivity, use humor, and allow social interaction. Include colorful visuals and structured routines. Use dance, music, and role-playing to channel energy constructively.",
+    "Earth": "Provide structure, engage in cooking or gardening, and encourage group activities. Avoid excessively cold foods. Support with music, storytelling, and grounding exercises.",
+    "Metal": "Ensure predictability, build structured routines, and allow decision-making. Use creative outlets like arts and crafts. Avoid overwhelming stimuli and help them reflect on emotions.",
+    "Water": "Encourage self-expression through art, writing, and storytelling. Maintain hydration and prioritize sleep. Use nature walks and meditation to improve focus and calmness."
+}
 
+@app.route('/', methods=['GET', 'POST'])
+def quiz():
+    if request.method == 'POST':
+        scores = {"Wood": 0, "Fire": 0, "Earth": 0, "Metal": 0, "Water": 0}
+        
+        for element, questions in element_questions.items():
+            for i, question in enumerate(questions):
+                key = f"{element}_{i}"
+                scores[element] += int(request.form.get(key, 0))
+        
+        # Determine the highest-scoring element
+        dominant_element = max(scores, key=scores.get)
+        advice = element_advice[dominant_element]
+        return render_template('result.html', dominant_element=dominant_element, advice=advice, scores=scores)
+    
+    return render_template('quiz.html', element_questions=element_questions)
+
+if __name__ == '__main__':
+    app.run(debug=True)
