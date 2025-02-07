@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Child Element Quiz</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; direction: rtl; text-align: right; }
+        .container { max-width: 600px; margin: auto; }
+        h2 { text-align: center; }
+        .question { margin-bottom: 15px; }
+        .result { display: none; padding: 15px; background: #f4f4f4; margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>استبيان عناصر الطفل / Child Element Questionnaire</h2>
+        <form id="quiz-form">
+            <div id="questions"></div>
+            <button type="submit">إرسال / Submit</button>
+        </form>
+        <div id="result" class="result"></div>
+    </div>
+    <script>
+        const elements = {
+            Wood: {
+                traits: "نشط، فضولي، قوي الإرادة، سريع التصرف، يحب الفوز، يتعلم بالممارسة، يحب المخاطر. / Energetic, curious, strong-willed, quick to act, loves to win, learns by doing, loves danger.",
+                questions: [
+                    "يحب تجربة أشياء جديدة؟ / Enjoys trying new things?", "يتعلم من خلال النشاط البدني؟ / Learns physically?", "يتحرك كثيرًا؟ / Twitches and squirms?",
+                    "يكره القيود؟ / Dislikes restrictions?", "يحب المخاطر؟ / Loves danger?", "يعاني من التبول الليلي؟ / Has bed wetting issues?",
+                    "واثق جدًا بنفسه؟ / Overconfident?", "يغضب بسرعة؟ / Explosive anger?", "يشتهي السكر والصودا والزبدة؟ / Craves sugar, soda, butter?"
+                ],
+                tips: "زيادة شرب الماء والسوائل، إعطاء زيوت السمك، الأولوية للاستحمام، السباحة، والنوم. / Increase drinking water & fluids, give fish oils, prioritize bathing, swimming, and sleep.",
+                careers: "رائد أعمال، مستجيب للطوارئ، طبيب، فنان، محامٍ، معلم / Entrepreneur, Emergency Responder, Medical Career, Artist, Lawyer, Teacher"
+            },
+            Fire: {
+                traits: "حماسي، اجتماعي، مفعم بالطاقة، مرح، مضحك، متفائل. / Excitable, social, full of energy, playful, funny, optimistic.",
+                questions: [
+                    "يحب الانتباه؟ / Loves attention?", "تتغير مزاجه بسرعة؟ / Mood changes quickly?", "يواجه صعوبة في النوم؟ / Difficulty sleeping?",
+                    "يتشتت بسهولة؟ / Easily distracted?", "يصاب بالذعر بسهولة؟ / Panics easily?", "يشعر بالملل بسرعة؟ / Complains of boredom?",
+                    "يتصرف باندفاع؟ / Acts impulsively?", "يتعرق كثيرًا؟ / Sweats a lot?", "يشتهي الحلويات والأطعمة الحارة؟ / Craves sweets, spicy food?"
+                ],
+                tips: "استخدام التشجيع الإيجابي، توفير وجبة إفطار غنية بالبروتين، دمج الألوان والرسوم البيانية في التعلم. / Use positive reinforcement, provide protein-rich breakfast, incorporate colorful visuals in learning.",
+                careers: "معلم، عامل حضانة، صحفي، طاهٍ / Teacher, Daycare Worker, Journalist, Chef"
+            },
+            Earth: {
+                traits: "حنون، مفكر، مخلص، أحيانًا قلق. / Caring, kind, thoughtful, loyal, sometimes worried and anxious.",
+                questions: [
+                    "هل طفلك يهتم بالآخرين دائمًا؟ / Is your child caring and always thinking about others?", "هل طفلك يأكل بكثرة؟ / Does your child overeat?", "هل يفضل التواجد مع الآخرين بدلاً من البقاء وحده؟ / Does your child prefer being with others rather than alone?",
+                    "هل لديه صعوبة في وضع الحدود أو احترام المساحة الشخصية؟ / Does your child have trouble setting boundaries or respecting personal space?", "هل يشعر بالقلق عندما يكون بعيدًا عن أحبائه؟ / Does your child feel anxious when away from loved ones?",
+                    "هل يشكو طفلك كثيرًا من آلام المعدة أو مشاكل الهضم؟ / Does your child have stomach aches or indigestion?"
+                ],
+                tips: "استخدام الألعاب الجماعية والتكامل الحسي والطهي معًا. / Use group activities, sensory integration, and cooking together.",
+                careers: "أخصائي رعاية صحية، معلم، أخصائي اجتماعي، فنان / Healthcare Professional, Teacher, Social Worker, Artist"
+            },
+            Metal: {
+                traits: "منظم، دقيق، يركز على التفاصيل. / Organized, careful, detail-focused.",
+                questions: [
+                    "يحب الروتين؟ / Likes routine?", "يشتهي أطعمة غير عادية؟ / Craves unusual food?", "يغضب عند ارتكاب الأخطاء؟ / Gets upset over mistakes?",
+                    "يحب الترتيب والنظام؟ / Likes order and tidiness?", "يلوم الآخرين عند حدوث خطأ؟ / Blames others?", "حساس جدًا للروائح؟ / Sensitive to smells?"
+                ],
+                tips: "تحفيز التفكير التحليلي والتنظيم، تعزيز الروتين اليومي، استخدام الأنشطة الإبداعية. / Encourage analytical thinking, structured routines, and creative activities.",
+                careers: "مهندس، محاسب، مهندس معماري، عالم / Engineer, Accountant, Architect, Scientist"
+            },
+            Water: {
+                traits: "خيالي، هادئ، يحب الأحلام، يأخذ وقته، يحب العزلة، حساس للنقد. / Imaginative, quiet, loves to dream, takes time, likes being alone, sensitive to criticism.",
+                questions: [
+                    "يملك خيالاً واسعًا؟ / Big imagination?", "يشعر بالراحة عند البقاء بمفرده؟ / Comfortable alone?", "يواجه صعوبة في إنهاء المهام؟ / Trouble finishing tasks?",
+                    "يأخذ وقتًا طويلاً في تنفيذ الأشياء؟ / Takes time doing things?", "يفكر بشكل سلبي؟ / Negative thoughts?"
+                ],
+                tips: "تعزيز الإبداع، استخدام القصص والأعمال الفنية كوسائل تعبيرية، توفير بيئة هادئة. / Foster creativity, use storytelling and art as expressive tools, provide a calm environment.",
+                careers: "كاتب، فنان، موسيقي، طبيب نفسي / Writer, Artist, Musician, Psychologist"
+            }
+        };
+
+        function populateQuestions() {
+            const questionsDiv = document.getElementById('questions');
+            Object.keys(elements).forEach(element => {
+                const header = document.createElement('h3');
+                header.textContent = `${element} - ${elements[element].traits}`;
+                questionsDiv.appendChild(header);
+                elements[element].questions.forEach((question, index) => {
+                    const div = document.createElement('div');
+                    div.className = 'question';
+                    div.innerHTML = `<label>${question}</label>
+                        <select name="${element}" required>
+                            <option value="1">Rarely</option>
+                            <option value="2">Sometimes</option>
+                            <option value="3">Very Often</option>
+                        </select>`;
+                    questionsDiv.appendChild(div);
+                });
+            });
+        }
+        document.addEventListener('DOMContentLoaded', populateQuestions);
+    </script>
+</body>
+</html>
